@@ -46,6 +46,9 @@ index = must(r'"name": "EYVA vitamin C shower head",',
              index)
 index = must(r'"category": "Vitamin C shower head",', '"category": "Shower filters",\n   "areaServed": "AE",', index)
 
+# Page title: category and place first for search, the line second.
+index = must(r"<title>EYVA — The step before your shampoo</title>", "<title>EYVA — Shower filter head, Dubai. The step before your shampoo.</title>", index)
+
 # Footer: legal line, Terms and Privacy.
 index = must(
     r'<div class="base"><span>© 2026 EYVA</span><span>Feel it, or send it back\.</span></div>',
