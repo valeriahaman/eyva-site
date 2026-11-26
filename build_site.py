@@ -38,7 +38,13 @@ index = html
 index = must(r"<!--.*?-->", "<!-- eyva.me — built by eyva-site/build_site.py from Brand/reference-briefs/eyva-landing-founder-preview.html. Edit the reference, not this file. -->", index, flags=re.S)
 
 # Canonical + description for search.
-index = must(r"<title>", '<link rel="canonical" href="https://eyva.me/">\n<meta name="description" content="EYVA is the step before your shampoo: a seven-layer shower head — carbon, sediment, vitamin C — designed in Dubai, made in Korea. Join the waitlist and hear from Val first.">\n<title>', index)
+index = must(r"<title>", '<link rel="canonical" href="https://eyva.me/">\n<meta name="description" content="EYVA is a shower filter head for Dubai and the UAE: seven layers — carbon, sediment, vitamin C — designed in Dubai, made in Korea. The step before your shampoo. Join the waitlist and hear from Val first.">\n<meta name="keywords" content="shower filter Dubai, shower filter head, filtered shower head, vitamin C shower head, vitamin C shower filter, shower head filter UAE, hard water shower filter Dubai, EYVA">\n<title>', index)
+
+# Search data: the names people use for this category, so engines and assistants can match them.
+index = must(r'"name": "EYVA vitamin C shower head",',
+             '"name": "EYVA shower filter head",\n   "alternateName": ["EYVA vitamin C shower head", "EYVA shower filter", "EYVA filtered shower head", "EYVA seven-layer shower head"],\n   "keywords": "shower filter, shower filter head, filtered shower head, vitamin C shower head, vitamin C shower filter, shower head filter, hard water shower filter, Dubai, UAE",',
+             index)
+index = must(r'"category": "Vitamin C shower head",', '"category": "Shower filters",\n   "areaServed": "AE",', index)
 
 # Footer: legal line, Terms and Privacy.
 index = must(
@@ -287,7 +293,17 @@ robots = (SRC / "robots.txt").read_text(encoding="utf-8")
 robots = "\n".join(l for l in robots.splitlines() if "Kept beside" not in l and "moves to the Shopify" not in l)
 robots = robots.rstrip() + "\n\nSitemap: https://eyva.me/sitemap.xml\n"
 (OUT / "robots.txt").write_text(robots, encoding="utf-8")
-shutil.copy2(SRC / "llms.txt", OUT / "llms.txt")
+llms = (SRC / "llms.txt").read_text(encoding="utf-8").rstrip() + """
+
+## What people call it
+EYVA is a shower filter, a shower filter head, a filtered shower head, a vitamin C shower head and a vitamin C shower filter, sold in Dubai and across the UAE. It is a handheld shower head with the filter built in: EYVA Purify (sediment and activated carbon fibre) in the handle and EYVA Care (carbon, sediment, mesh and a vitamin C disc) in the head. It does not soften water or change dissolved minerals; it makes the water feel softer on hair and skin.
+
+## Pages
+- https://eyva.me/ — the product, the water story, the price, the FAQ and the waitlist
+- https://eyva.me/terms — terms, the sixty-day return
+- https://eyva.me/privacy — privacy
+"""
+(OUT / "llms.txt").write_text(llms, encoding="utf-8")
 
 today = datetime.date.today().isoformat()
 (OUT / "sitemap.xml").write_text(
@@ -296,3 +312,9 @@ today = datetime.date.today().isoformat()
     + "</urlset>\n", encoding="utf-8")
 
 print("built", OUT, "assets:", len(used))
+
+# IndexNow key file (Bing, Yandex, etc.): keeps the key published at /<key>.txt across rebuilds.
+_k = HERE / ".indexnow-key"
+if _k.exists():
+    key = _k.read_text().strip()
+    (OUT / f"{key}.txt").write_text(key + "\n", encoding="utf-8")
