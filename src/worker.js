@@ -86,7 +86,21 @@ async function handleForm(request, env, ctx, kind) {
   }
 
   ctx.waitUntil(notify(env, entry).catch((e) => console.log("mail failed", e && e.message)));
+  ctx.waitUntil(toSheet(env, entry).catch((e) => console.log("sheet failed", e && e.message)));
   return json({ ok: true });
+}
+
+// One row per entry in the Google Sheet "EYVA waitlist", through its Apps Script receiver (SHEET_URL secret).
+async function toSheet(env, e) {
+  if (!env.SHEET_URL) return;
+  const row = [e.at, e.kind, e.name, e.email, e.colour, e.friend, e.salon, e.contact, e.message, e.source, e.country];
+  const r = await fetch(env.SHEET_URL, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ token: env.SHEET_TOKEN || "", row }),
+    redirect: "follow",
+  });
+  if (!r.ok) throw new Error("sheet status " + r.status);
 }
 
 async function notify(env, e) {
