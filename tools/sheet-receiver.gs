@@ -4,13 +4,14 @@
 
 var TOKEN = "eyva-2026-sheet";          // must match SHEET_TOKEN on the site
 var SUMMARY_TO = "val@eyva.me";
+var SHEET_ID = "1im-Ut5ai3xDiW1mqzutKK1nzqWUZCsEo9HmPz6QYsCY";   // the EYVA waitlist sheet
 
 function doPost(e) {
   var data = JSON.parse(e.postData.contents);
   if (data.token !== TOKEN) {
     return ContentService.createTextOutput("no").setMimeType(ContentService.MimeType.TEXT);
   }
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
   sheet.appendRow(data.row);
   return ContentService.createTextOutput("ok").setMimeType(ContentService.MimeType.TEXT);
 }
@@ -22,7 +23,7 @@ function setup() {
 }
 
 function dailySummary() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
   var rows = sheet.getDataRange().getValues().slice(1);
   var since = new Date(Date.now() - 24 * 3600 * 1000);
   var total = 0, today = 0, colours = {};
@@ -34,6 +35,6 @@ function dailySummary() {
   });
   var lines = ["Waitlist: " + total + " in total, " + today + " in the last 24 hours.", ""];
   Object.keys(colours).forEach(function (c) { lines.push(c + ": " + colours[c]); });
-  lines.push("", SpreadsheetApp.getActiveSpreadsheet().getUrl());
+  lines.push("", SpreadsheetApp.openById(SHEET_ID).getUrl());
   MailApp.sendEmail(SUMMARY_TO, "EYVA waitlist — " + total + " (+" + today + ")", lines.join("\n"));
 }
