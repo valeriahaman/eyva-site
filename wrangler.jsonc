@@ -13,7 +13,7 @@
     "MAIL_TO": "valeriahaman@gmail.com"
   },
   "kv_namespaces": [
-    { "binding": "WAITLIST", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }
+    { "binding": "WAITLIST", "id": "8d932d83b5e14e6ab2790c340fe94660" }
   ],
   "send_email": [
     { "name": "MAIL", "destination_address": "valeriahaman@gmail.com" }
