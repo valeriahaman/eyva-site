@@ -13,7 +13,9 @@ export default {
 
     // One address in the world: www.eyva.me and eyva.shop go to eyva.me.
     const local = url.hostname === "localhost" || url.hostname === "127.0.0.1";
-    if (url.hostname !== CANONICAL && !url.hostname.endsWith(".workers.dev") && !local) {
+    const isApi = url.pathname.startsWith("/api/");
+    // Form posts are answered on any address; only page views are redirected to the canonical host.
+    if (!isApi && url.hostname !== CANONICAL && !url.hostname.endsWith(".workers.dev") && !local) {
       url.hostname = CANONICAL;
       url.protocol = "https:";
       return Response.redirect(url.toString(), 301);
