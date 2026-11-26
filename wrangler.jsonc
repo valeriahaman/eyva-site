@@ -18,5 +18,7 @@
   "send_email": [
     { "name": "MAIL", "destination_address": "valeriahaman@gmail.com" }
   ],
+  "workers_dev": true,
+  "preview_urls": false,
   "observability": { "enabled": true }
 }

@@ -862,7 +862,7 @@ document.querySelectorAll('a[data-wa-link]').forEach(function(a){ a.href=WA_LINK
       if(!EMAIL_RE.test(v)){ inp.setAttribute('aria-invalid','true'); inp.focus(); note.textContent='Please add an email Val can write to.'; return; }
       inp.removeAttribute('aria-invalid'); hb.disabled=true;
       window.eyvaSend('/api/join',{email:v,consent:true,source:'hero'}).then(function(){
-        hero.hidden=true; note.textContent='You’re on the waitlist. Val writes.';
+        hero.style.display='none'; note.textContent='You’re on the waitlist. Val writes.';
       }).catch(function(){ hb.disabled=false; note.textContent='Something went wrong on our side. Please email val@eyva.me.'; });
     });
   }
@@ -878,7 +878,7 @@ document.querySelectorAll('a[data-wa-link]').forEach(function(a){ a.href=WA_LINK
       sb.disabled=true;
       window.eyvaSend('/api/salon',{name:n.value.trim(),salon:s.value.trim(),contact:c.value.trim(),source:'salon'}).then(function(){
         var p=document.createElement('p'); p.className='letter'; p.innerHTML='<h3>Thank you.</h3><p style="margin-top:12px">Val will write when the first units exist.</p>';
-        salon.hidden=true; salon.parentNode.insertBefore(p, salon.nextSibling);
+        salon.style.display='none'; salon.parentNode.insertBefore(p, salon.nextSibling);
       }).catch(function(){ sb.disabled=false; c.setAttribute('aria-invalid','true'); });
     });
   }
