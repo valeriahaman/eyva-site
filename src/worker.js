@@ -19,8 +19,9 @@ export default {
       return Response.redirect(url.toString(), 301);
     }
 
-    if (request.method === "POST" && (url.pathname === "/api/join" || url.pathname === "/api/salon")) {
-      return handleForm(request, env, ctx, url.pathname === "/api/join" ? "join" : "salon");
+    const kinds = { "/api/join": "join", "/api/salon": "salon", "/api/ask": "ask" };
+    if (request.method === "POST" && kinds[url.pathname]) {
+      return handleForm(request, env, ctx, kinds[url.pathname]);
     }
     if (url.pathname.startsWith("/api/")) {
       return json({ ok: false, error: "not found" }, 404);
@@ -57,6 +58,7 @@ async function handleForm(request, env, ctx, kind) {
     friend: clean(data.friend),
     salon: clean(data.salon),
     contact: clean(data.contact),
+    message: typeof data.message === "string" ? data.message.trim().slice(0, 4000) : "",
     consent: data.consent === true,
     source: clean(data.source),
     page: clean(data.page),
@@ -68,6 +70,8 @@ async function handleForm(request, env, ctx, kind) {
   if (kind === "join") {
     if (!EMAIL_RE.test(entry.email)) return json({ ok: false, error: "email" }, 400);
     if (!entry.consent) return json({ ok: false, error: "consent" }, 400);
+  } else if (kind === "ask") {
+    if (!entry.name || !EMAIL_RE.test(entry.email) || !entry.message) return json({ ok: false, error: "fields" }, 400);
   } else {
     if (!entry.name || !entry.contact) return json({ ok: false, error: "fields" }, 400);
   }
@@ -87,12 +91,14 @@ async function notify(env, e) {
   if (!env.MAIL) return;
   const subject = e.kind === "join"
     ? `Waitlist: ${e.name || e.email}${e.colour ? " - " + e.colour : ""}`
+    : e.kind === "ask"
+    ? `Question: ${e.name}`
     : `Salon: ${e.name}${e.salon ? " - " + e.salon : ""}`;
-  const lines = Object.entries(e)
-    .filter(([, v]) => v !== "" && v !== false)
+  const lines = (e.kind === "ask" ? e.message + "\n\n---\n" : "") + Object.entries(e)
+    .filter(([k, v]) => v !== "" && v !== false && k !== "message")
     .map(([k, v]) => `${k}: ${v}`)
     .join("\n");
-  const replyTo = e.kind === "join" ? e.email : (EMAIL_RE.test(e.contact) ? e.contact : "");
+  const replyTo = e.email && EMAIL_RE.test(e.email) ? e.email : (EMAIL_RE.test(e.contact) ? e.contact : "");
   const raw =
     `From: EYVA site <${FROM}>\r\n` +
     `To: <${env.MAIL_TO}>\r\n` +

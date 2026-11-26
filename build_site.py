@@ -44,12 +44,15 @@ index = must(r"<title>", '<link rel="canonical" href="https://eyva.me/">\n<meta 
 index = must(
     r'<div class="base"><span>© 2026 EYVA</span><span>Feel it, or send it back\.</span></div>',
     '<div class="base"><span>© 2026 ' + COMPANY + ' · Feel it, or send it back.</span>'
-    '<span><a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="mailto:' + EMAIL + '">' + EMAIL + '</a></span></div>'
+    '<span><a href="/terms">Terms</a> · <a href="/privacy">Privacy</a></span></div>'
     '<p class="legal">' + COMPANY + ' · ' + ADDRESS + ' · Licence ' + LICENCE + '</p>',
     index)
 index = must(r"(footer \.about\{[^}]*\})",
              r"\1\nfooter .base a{display:inline;margin:0;color:#bcb7ae}\nfooter .legal{grid-column:1/-1;margin-top:10px;font-size:13px;line-height:1.5;color:#8d8982}",
              index)
+
+index = must(r'(<a href="https://instagram.com/valeryhaman">Val @valeryhaman</a>)',
+             r'\1\n      <a href="mailto:' + EMAIL + '">' + EMAIL + '</a>', index)
 
 # Hero capture form: give it an id so the script below can find it.
 index = must(r'<form class="capture" onsubmit="return false">', '<form class="capture" id="heroJoin" novalidate>', index)
@@ -111,10 +114,57 @@ SEND_SCRIPT = r"""
       }).catch(function(){ sb.disabled=false; c.setAttribute('aria-invalid','true'); });
     });
   }
+
+  // Question box.
+  var ask=document.getElementById('ask');
+  if(ask){
+    ask.addEventListener('submit',function(e){
+      e.preventDefault();
+      var n=document.getElementById('qName'), m=document.getElementById('qEmail'), t=document.getElementById('qMsg'), er=document.getElementById('qErr'), ab=ask.querySelector('button');
+      if(!n.value.trim()){ er.textContent='Please add your name.'; n.focus(); return; }
+      if(!EMAIL_RE.test(m.value.trim())){ er.textContent='Please add an email Val can reply to.'; m.focus(); return; }
+      if(!t.value.trim()){ er.textContent='Please write your message.'; t.focus(); return; }
+      er.textContent=''; ab.disabled=true;
+      window.eyvaSend('/api/ask',{name:n.value.trim(),email:m.value.trim(),message:t.value.trim(),source:'ask'}).then(function(){
+        var p=document.createElement('div'); p.className='letter'; p.innerHTML='<h3>Thank you.</h3><p style="margin-top:12px">Val reads every message herself and writes back.</p>';
+        ask.style.display='none'; ask.parentNode.insertBefore(p, ask.nextSibling);
+      }).catch(function(){ ab.disabled=false; er.textContent='Something went wrong on our side. Please email val@eyva.me.'; });
+    });
+  }
 })();
 </script>
 </body>"""
 index = must(r"</body>", SEND_SCRIPT, index)
+
+# Instagram line under the founder's signature.
+index = must(r'(<p class="sig">Val, founder</p>)',
+             r'\1\n      <p class="follow">Follow along on Instagram, <a href="https://instagram.com/eyva.me" target="_blank" rel="noopener">@eyva.me</a>.</p>',
+             index)
+index = must(r"(/\* salon \*/)", "\n.follow{margin-top:14px;color:var(--muted)}\n.follow a{color:var(--charcoal)}\n.ask{margin-top:80px}\n.ask .split{align-items:start}\n.ask .mail{margin-top:18px;color:var(--muted);font-size:17px}\n.ask .mail a{color:var(--charcoal)}\n\\1", index)
+
+# Question box after the FAQ list.
+ASK = """    </div>
+    <div class="ask split">
+      <div class="reveal">
+        <span class="eyebrow">Something else?</span>
+        <h2 style="margin:16px 0 22px">Write to Val, she answers herself.</h2>
+        <p class="mail">Or from your own mail: <a href="mailto:val@eyva.me">val@eyva.me</a></p>
+      </div>
+      <div>
+        <form class="full" id="ask" novalidate>
+          <div class="field"><label for="qName">Your name</label><input id="qName" autocomplete="given-name"></div>
+          <div class="field"><label for="qEmail">Your email</label><input id="qEmail" type="email" autocomplete="email"></div>
+          <div class="field"><label for="qMsg">Your message</label><textarea id="qMsg" rows="5"></textarea></div>
+          <p class="err" id="qErr" role="alert"></p>
+          <div><button class="btn" type="submit">Send</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="salon">"""
+index = must(r"    </div>\n  </div>\n</section>\n\n<section class=\"salon\">", ASK, index)
 
 # Honeypot: an unlabelled field bots fill and people never see.
 index = must(r'(<form class="full" id="waitlist" novalidate>)',

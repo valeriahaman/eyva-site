@@ -354,6 +354,13 @@ label,.label{display:block;font-size:14px;letter-spacing:.14em;text-transform:up
 .beforenote{margin-top:30px;display:grid;gap:18px}
 .wa-hello{margin:1em 0}
 
+
+.follow{margin-top:14px;color:var(--muted)}
+.follow a{color:var(--charcoal)}
+.ask{margin-top:80px}
+.ask .split{align-items:start}
+.ask .mail{margin-top:18px;color:var(--muted);font-size:17px}
+.ask .mail a{color:var(--charcoal)}
 /* salon */
 .salon .split{align-items:center}
 
@@ -483,6 +490,7 @@ footer .legal{grid-column:1/-1;margin-top:10px;font-size:13px;line-height:1.5;co
       </picture>
       <blockquote>“I knew it was mine, my product, when I could not go without it anymore.”</blockquote>
       <p class="sig">Val, founder</p>
+      <p class="follow">Follow along on Instagram, <a href="https://instagram.com/eyva.me" target="_blank" rel="noopener">@eyva.me</a>.</p>
     </div>
     <div class="account reveal">
       <span class="eyebrow">In Val's words</span>
@@ -650,6 +658,22 @@ footer .legal{grid-column:1/-1;margin-top:10px;font-size:13px;line-height:1.5;co
       <details><summary>Is Dubai tap water bad for hair and skin?</summary><p>No. The water here is treated to be safe, and it is. Safe is not the same as soft. It starts as the sea, the salt is taken out, and it sits in tanks before it reaches your building. You feel it in your hair. You feel it on your skin. EYVA is the step in between.</p></details>
       <details><summary>What is the difference between a shower filter and a water softener?</summary><p>A water softener changes the minerals dissolved in the water. EYVA doesn't: the dissolved minerals pass through any shower head, this one included. In its two parts, two sediment layers catch rust and particles from the pipes, and carbon, twice, takes up chlorine. It makes the water feel softer on your hair and skin.</p></details>
     </div>
+    <div class="ask split">
+      <div class="reveal">
+        <span class="eyebrow">Something else?</span>
+        <h2 style="margin:16px 0 22px">Write to Val, she answers herself.</h2>
+        <p class="mail">Or from your own mail: <a href="mailto:val@eyva.me">val@eyva.me</a></p>
+      </div>
+      <div>
+        <form class="full" id="ask" novalidate>
+          <div class="field"><label for="qName">Your name</label><input id="qName" autocomplete="given-name"></div>
+          <div class="field"><label for="qEmail">Your email</label><input id="qEmail" type="email" autocomplete="email"></div>
+          <div class="field"><label for="qMsg">Your message</label><textarea id="qMsg" rows="5"></textarea></div>
+          <p class="err" id="qErr" role="alert"></p>
+          <div><button class="btn" type="submit">Send</button></div>
+        </form>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -687,9 +711,10 @@ footer .legal{grid-column:1/-1;margin-top:10px;font-size:13px;line-height:1.5;co
     <div>
       <a href="https://instagram.com/eyva.me">Instagram @eyva.me</a>
       <a href="https://instagram.com/valeryhaman">Val @valeryhaman</a>
+      <a href="mailto:val@eyva.me">val@eyva.me</a>
       <a href="#join">Join the waitlist</a>
     </div>
-    <div class="base"><span>© 2026 EYVA Concepts FZ-LLC · Feel it, or send it back.</span><span><a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="mailto:val@eyva.me">val@eyva.me</a></span></div><p class="legal">EYVA Concepts FZ-LLC · FDBC5419, Compass Building, Al Shohada Road, Al Hamra Industrial Zone-FZ, Ras Al Khaimah, United Arab Emirates · Licence 45040421</p>
+    <div class="base"><span>© 2026 EYVA Concepts FZ-LLC · Feel it, or send it back.</span><span><a href="/terms">Terms</a> · <a href="/privacy">Privacy</a></span></div><p class="legal">EYVA Concepts FZ-LLC · FDBC5419, Compass Building, Al Shohada Road, Al Hamra Industrial Zone-FZ, Ras Al Khaimah, United Arab Emirates · Licence 45040421</p>
   </div>
 </footer>
 
@@ -880,6 +905,23 @@ document.querySelectorAll('a[data-wa-link]').forEach(function(a){ a.href=WA_LINK
         var p=document.createElement('p'); p.className='letter'; p.innerHTML='<h3>Thank you.</h3><p style="margin-top:12px">Val will write when the first units exist.</p>';
         salon.style.display='none'; salon.parentNode.insertBefore(p, salon.nextSibling);
       }).catch(function(){ sb.disabled=false; c.setAttribute('aria-invalid','true'); });
+    });
+  }
+
+  // Question box.
+  var ask=document.getElementById('ask');
+  if(ask){
+    ask.addEventListener('submit',function(e){
+      e.preventDefault();
+      var n=document.getElementById('qName'), m=document.getElementById('qEmail'), t=document.getElementById('qMsg'), er=document.getElementById('qErr'), ab=ask.querySelector('button');
+      if(!n.value.trim()){ er.textContent='Please add your name.'; n.focus(); return; }
+      if(!EMAIL_RE.test(m.value.trim())){ er.textContent='Please add an email Val can reply to.'; m.focus(); return; }
+      if(!t.value.trim()){ er.textContent='Please write your message.'; t.focus(); return; }
+      er.textContent=''; ab.disabled=true;
+      window.eyvaSend('/api/ask',{name:n.value.trim(),email:m.value.trim(),message:t.value.trim(),source:'ask'}).then(function(){
+        var p=document.createElement('div'); p.className='letter'; p.innerHTML='<h3>Thank you.</h3><p style="margin-top:12px">Val reads every message herself and writes back.</p>';
+        ask.style.display='none'; ask.parentNode.insertBefore(p, ask.nextSibling);
+      }).catch(function(){ ab.disabled=false; er.textContent='Something went wrong on our side. Please email val@eyva.me.'; });
     });
   }
 })();
